@@ -1,88 +1,135 @@
-# Ex4 – Extended Spreadsheet Project  
-**Ariel University – Introduction to Computer Science, 2025A**
+ Ex4 – Advanced Spreadsheet System
+Ariel University – Introduction to Computer Science, 2025A
 
----
+📌 Project Overview
+This project is an extended version of the Ex2 Spreadsheet system. It introduces:
 
-## 📌 Project Description
-This project is an advanced version of the Ex2 Spreadsheet system. It introduces extended functionalities such as 2D range support, mathematical functions, and conditional logic. The application handles parsing, evaluation, error detection, and saving/loading spreadsheet data.
+📐 2D range support
 
----
+🧮 Mathematical aggregation functions
 
-## 🧱 Main Components
+🧠 Conditional logic with if
 
-### 🗂 Key Classes
-- **`Ex2Sheet.java`** – Main class implementing the `Sheet` interface, managing all cells.
-- **`SCell.java`** – Represents each cell in the spreadsheet, handles parsing, evaluation, formula resolution, and error detection.
-- **`Range2D.java`** – Represents a rectangular range of cells (e.g., `A1:C3`), used for aggregation functions.
-- **`Ex2Utils.java`** – Includes utility functions for parsing strings, coordinates, types, and formula validation.
-- **`CellEntry.java`** – Represents a cell's position and is used for dependency resolution.
-- **`Spreadsheet.java`** – GUI wrapper and controller (optional).
-- **`Ex2GUI.java`** – Visual display of the spreadsheet (provided GUI).
-- **Test Classes**: `SCellTest.java`, `Ex2SheetTest.java`, `Range2DTest.java`.
+🛠 Formula parsing, validation, and evaluation
 
----
+💾 Save/load functionality
 
-## 🔧 Features
+🗂 Key Classes
+Ex2Sheet.java – Implements the Sheet interface, manages all spreadsheet data.
 
-### ➕ Formula Parsing
-- Supports recursive parsing and evaluation of expressions:
-  - Basic math: `=1+2*3`
-  - Parentheses: `=(1+2)*(3-1)`
-  - Cell references: `=A1+B2*C3`
+SCell.java – Represents a single cell, including parsing, evaluation, and error detection.
 
-### 📐 Range2D Support
-- Syntax: `A1:C3` (inclusive rectangle).
-- Internally represented as two corner points.
-- Used in functions like `min`, `max`, `sum`, and `average`.
+Range2D.java – Represents a 2D range of cells, e.g., A1:C3.
 
-### 🧮 Aggregation Functions
-- Format: `=sum(A1:C3)`, `=average(B2:B5)`, etc.
-- Functions supported:
-  - `min(range)`
-  - `max(range)`
-  - `sum(range)`
-  - `average(range)`
-- Invalid format results in `FUNC_ERR`.
+Ex2Utils.java – Utility class for parsing strings, coordinates, and validating formulas.
 
-### ❓ Conditional Expressions
-- Format: `=if(<cond>, <ifTrue>, <ifFalse>)`
-- Condition is of the form `formula1 op formula2`, with `op` from `{<, >, ==, !=, <=, >=}`.
-- Supports nesting and all value types (text, number, formula).
-- Invalid format results in `IF_ERR`.
+CellEntry.java – Represents a cell position and is used for dependency resolution.
 
-#### ✅ Examples:
-```
-=if(1<2,1,2)
-=if(A1>2,=B1+1,"low")
-=if(A1*A2 != A3/(2-A1), =A2+2, =A1+1)
-```
+Spreadsheet.java – GUI controller (optional).
 
----
+Ex2GUI.java – Provided GUI for the spreadsheet.
 
-## ⚠️ Error Handling
-- **`ERR_FORM`** – Invalid formula structure.
-- **`ERR_CYCLE`** – Cyclic dependency (e.g., A1 depends on itself).
-- **`FUNC_ERR`** – Malformed aggregation function.
-- **`IF_ERR`** – Invalid conditional logic.
+Test Classes – SCellTest.java, Ex2SheetTest.java, Range2DTest.java.
 
----
+🧮 Supported Features
+🔲 2D Ranges (Range2D)
+Use syntax like A1:C3 in functions to operate over multiple cells.
+Example: =sum(A1:C5)
 
-## 💾 Save & Load
-- Spreadsheet can be saved to and loaded from `.txt` files.
-- All valid values, formulas, functions, and conditionals are persisted and parsed correctly.
+➕ Aggregation Functions
+=min(A1:C5) → Smallest value
 
----
+=max(A1:C5) → Largest value
 
-## 🧪 Testing
-JUnit tests included:
-- **`SCellTest.java`** – Tests cell parsing, formula evaluation, function handling, and conditionals.
-- **`Ex2SheetTest.java`** – Tests full spreadsheet behavior including `eval`, `set`, `get`, and error management.
-- **`Range2DTest.java`** – Validates range parsing, indexing, and boundary behavior.
+=sum(A1:C5) → Total sum
 
----
+=average(A1:C5) → Average value
 
-## 📁 File Structure
-```
+=multiply(A1:C5) → Product of all values
+
+🧩 Conditional Logic (if)
+Supports nested conditionals.
+Examples:
+
+=if(A1>10,High,Low)
+
+=if(A1>10,if(B1<5,50,Check),Low)
+
+Explanation of the second:
+
+If A1 > 10, check B1.
+
+If B1 < 5, return 50, otherwise return "Check".
+
+If A1 ≤ 10, return "Low".
+
+🚫 Error Handling
+Error Code	Description
+IF_ERR	Invalid if syntax (e.g., missing condition or values)
+FUNC_ERR	Malformed or unsupported function (e.g., single-cell function or multiple ranges)
+ERR_CYCLE	Circular reference detected
+
+📏 Function & IF Statement Rules
+Must begin with =
+
+No spaces allowed (e.g., =sum(A1:B1) ✅, = sum ( A1 : B1 ) ❌)
+
+if condition must follow format: formula OP formula (e.g., A1>5)
+
+if_true and if_false can be text, numbers, formulas, functions, or another if
+
+Circular references in functions/ranges → ERR_CYCLE
+
+Empty cells in a range are ignored
+
+Text inside a range → FUNC_ERR
+
+✅ Valid vs. ❌ Invalid Functions
+✅ Valid:
+=if(A1>5,10,20)
+
+=if(A1*A2!=A3/(2-A1),A2+2,A1+1)
+
+=sum(A1:C5)
+
+=min(A1:B4)
+
+=multiply(A1:B3)
+
+❌ Invalid:
+=if(A1>5,10) → Missing false value
+
+=if(A1,5,10) → Condition must be a comparison
+
+=min(A1) → Must be a range
+
+=sum(A1:A5,B1:B5) → Multiple ranges not supported
+
+=multiply(A1:A5,B1:B5) → Multiple ranges not supported
+
+🧪 Testing & Edge Cases
+✔ Covered by JUnit Tests:
+Invalid if syntax & structure
+
+Range functions with empty cells or text
+
+Formula parsing and operator handling
+
+Circular dependencies
+
+Edge cases with negative values, emptiness, and updates
+
+Dependency propagation between cells
+
+💾 Save & Load
+Data is saved/loaded from .txt files
+
+All values, formulas, and functions persist correctly
+
+📁 Project Structure
+bash
+Copy
+Edit
 Ex4/
 ├── src/
 │   └── ex4/
@@ -100,22 +147,7 @@ Ex4/
 │       └── Range2DTest.java
 ├── README.md
 └── Ex4.iml
-```
+📤 Submission
+Student ID: 208748368
 
----
-
-## 🚀 Running the Project
-1. Open with **IntelliJ IDEA** (or other Java IDE).
-2. Make sure JDK 17+ and **JUnit 5** are configured.
-3. Run:
-   - `main` in `Ex2GUI.java` for graphical interface.
-   - JUnit tests under `test/ex4/` for validation.
-
----
-
-## 🔗 Submission
-- **Student ID**: 208748368  
-- **GitHub Repository**: [https://github.com/Orelsalem21/Ex4.git](https://github.com/Orelsalem21/Ex4.git)
-
----
-
+GitHub Repository: https://github.com/Orelsalem21/Ex4.git
