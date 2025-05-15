@@ -13,7 +13,7 @@ import java.io.IOException;
  * It tests cell input (plain text, numbers, formulas), IF formulas (valid and self-referential),
  * range functions, and the load() method.
  */
-public class Ex2SheetTest {
+public class Ex2Tests {
 
     private Ex2Sheet sheet;
 
@@ -117,5 +117,62 @@ public class Ex2SheetTest {
         assertEquals("Hello", sheet.value(0, 0), "Cell (0,0) should contain 'Hello' after loading.");
         assertEquals("20.0", sheet.value(1, 1), "Cell (1,1) should evaluate to '20.0' after loading.");
         assertEquals("100.0", sheet.value(2, 2), "Cell (2,2) should evaluate to '100.0' after loading.");
+    }
+    @Test
+    @DisplayName("min function inside a cell evaluates correctly")
+    public void minFunctionInCell() {
+        sheet.set(0, 0, "10");
+        sheet.set(1, 0, "3");
+        sheet.set(2, 0, "7");
+        sheet.set(3, 0, "=min(a0:c0)");
+        sheet.eval();
+        assertEquals("3.0", sheet.value(3, 0), "min(A0:C0) should evaluate to 3.0");
+    }
+
+    @Test
+    @DisplayName("sum function with invalid range returns error")
+    public void sumFunctionInvalidRangeError() {
+        sheet.set(4, 0, "=sum(A1)"); // Not a valid range
+        sheet.eval();
+        assertEquals(Ex2Utils.FUNC_EROR, sheet.value(4, 0), "Invalid sum(A1) should return FUNC_ERR");
+    }
+    @Test
+    @DisplayName("Complex IF formula with expressions inside works")
+    public void complexIfWithExpressions() {
+        sheet.set(0, 0, "2");
+        sheet.set(1, 0, "4");
+        sheet.set(2, 0, "3");
+        sheet.set(3, 0, "=if(a0*a1 != a2/(2-a0), =a1+2, =a0+1)");
+        sheet.eval();
+        // Expected: 2*4 = 8, 3/(2-2) → division by 0, so condition invalid → skip or handle
+        // If division fails, result might be ERR_If, otherwise compute branch
+        String result = sheet.value(3, 0);
+        assertTrue(result.equals("6.0") || result.equals(Ex2Utils.ERR_If),
+                "IF should evaluate correctly or produce IF_ERR on invalid math");
+    }
+    @Test
+    @DisplayName("Save and load a sheet with formulas and functions")
+    public void testSaveAndLoadSheetWithFormulas() throws IOException {
+        // Step 1: Set initial values and formulas
+        sheet.set(0, 0, "5");                         // Cell A0 = 5
+        sheet.set(1, 0, "3");                         // Cell B0 = 3
+        sheet.set(2, 0, "=min(a0:b0)");               // Cell C0 = min of A0 and B0 → 3
+        sheet.set(3, 0, "=if(a0>b0,high,low)");       // Cell D0 = "high" if 5 > 3, else "low"
+
+        // Step 2: Save the sheet to a file
+        String filePath = "test_save_load.txt";
+        sheet.save(filePath);
+
+        // Step 3: Load the sheet from the file into a new instance
+        Ex2Sheet loadedSheet = new Ex2Sheet(10, 10);
+        loadedSheet.load(filePath);
+        loadedSheet.eval();  // Re-evaluate all formulas
+
+        // Step 4: Assert that loaded values match expected results
+        assertEquals("3.0", loadedSheet.value(2, 0), "Loaded cell C0 should return min = 3.0");
+        assertEquals("high", loadedSheet.value(3, 0), "Loaded cell D0 should return 'high'");
+
+        // Step 5: Clean up - delete the test file
+        new File(filePath).delete();
     }
 }

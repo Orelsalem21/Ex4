@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for the SCell class.
  */
-public class SCellTest {
+public class SCellTests {
 
     @Test
     public void testSetDataAndRawInput() {

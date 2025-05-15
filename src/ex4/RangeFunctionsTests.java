@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for the RangeFunctions class.
  */
-public class RangeFunctionsTest {
+public class RangeFunctionsTests {
 
     @Test
     public void testMinFunction() {
