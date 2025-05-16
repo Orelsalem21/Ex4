@@ -1,0 +1,5 @@
+I2CS ArielU: SpreadSheet (Ex2) assignment
+0,0,5
+1,0,3
+2,0,=min(a0:b0)
+3,0,=if(a0>b0,high,low)
