@@ -8,7 +8,7 @@
 This software represents an upgraded spreadsheet system tailored for the *Introduction to Computer Science* course. It adds sophisticated support for computations, decision-making logic, error detection, and data persistence.
 
 ### 🔑 Key Features:
--  Range2D-based calculations: `sum`, `min`, `max`, `multiply`, `average`
+-  Range2D-based calculations: `sum`, `min`, `max`, `average`
 -  Conditional operations using `if` logic
 -  Robust formula and function validation
 -  Detection of cyclic dependencies
@@ -16,10 +16,8 @@ This software represents an upgraded spreadsheet system tailored for the *Introd
 
 ---
 
-## 📽 Demo Video  
-Click the image below to view a demo of the spreadsheet in action.
-
-🖱️ ![Spreadsheet Preview](./demo-screenshot.png)
+## 📽 Demo Photo 
+****
 
 ---
 
@@ -30,11 +28,10 @@ Click the image below to view a demo of the spreadsheet in action.
 - Common use: `=sum(A1:C5)` – totals the values across the selected area
 
 ### 2️⃣ Built-in Functions
-- `=min(A1:C5)` → Fetches the **lowest** number
-- `=max(A1:C5)` → Fetches the **highest** number
-- `=sum(A1:C5)` → Returns the **total sum**
+- `=min(A1:C5)` → Fetches the **lowest** number  
+- `=max(A1:C5)` → Fetches the **highest** number  
+- `=sum(A1:C5)` → Returns the **total sum**  
 - `=average(A1:C5)` → Computes the **mean**
-- `=multiply(A1:C5)` → Multiplies all entries
 
 ### 3️⃣ `if` Logic Statements
 Example:  
@@ -83,7 +80,7 @@ Empty cells in a range are skipped. If any range contains a **text** cell → `F
 =sum(A1:C5)
 =min(A1:B4)
 =max(A2:D3)
-=multiply(A1:B3)
+=average(A1:B3)
 ```
 
 ## ❌ Invalid Examples:
@@ -92,7 +89,7 @@ Empty cells in a range are skipped. If any range contains a **text** cell → `F
 =if(A1,5,10)             ← Condition isn't a comparison
 =min(A1)                 ← Not a range
 =sum(A1:A5,B1:B5)        ← Multiple ranges not allowed
-=multiply(A1:A5,B1:B5)   ← Multiple ranges not allowed
+=average(A1:A5,B1:B5)    ← Multiple ranges not allowed
 ```
 
 ---
@@ -101,12 +98,12 @@ Empty cells in a range are skipped. If any range contains a **text** cell → `F
 
 The project is backed by **JUnit tests** covering:
 
--  Invalid `if` use
--  Ranges with empty or invalid cells
--  Expression parsing and operator behavior
--  Circular dependencies
--  Edge input cases
--  Updates and re-evaluation propagation
+-  Invalid `if` use  
+-  Ranges with empty or invalid cells  
+-  Expression parsing and operator behavior  
+-  Circular dependencies  
+-  Edge input cases  
+-  Updates and re-evaluation propagation  
 
 ---
 
@@ -134,4 +131,3 @@ Ex4/
 ## 📌 Submission Details
 - **Student ID**: 208748368  
 - **Repository**: [https://github.com/Orelsalem21/Ex4.git](https://github.com/Orelsalem21/Ex4.git)
-
