@@ -148,8 +148,13 @@ public class Range2D {
         Double sum = 0.0;
         for (int i = 0; i < this.value.length; i++) {
             for (int j = 0; j < this.value[0].length; j++) {
-                if (value[i][j].equals("")){
+                if (value[i][j].equals("")) {
                     continue;
+                }
+                try {
+                    Double.parseDouble(value[i][j]);
+                } catch (Exception e) {
+                    return Ex2Utils.FUNC_ERR;
                 }
                 double current = Double.parseDouble(value[i][j]);
                 sum += current;
@@ -157,6 +162,7 @@ public class Range2D {
         }
         return sum.toString();
     }
+
 
     /**
      * Multiplies all the numbers in the range.
