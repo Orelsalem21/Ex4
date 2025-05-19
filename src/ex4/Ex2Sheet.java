@@ -340,7 +340,9 @@ public class Ex2Sheet implements Sheet {
             return line;
         }
         if (type == Ex2Utils.FUNCTION || type == Ex2Utils.FUNC_ERR_FORMAT) {
-            if (!Range2D.advnacedValidFunction(line, this)) {
+            line = line.trim();
+
+            if (!Range2D.advancedValidFunction(line, this)) {
                 c.setType(Ex2Utils.FUNC_ERR_FORMAT);
             } else {
                 c.setType(Ex2Utils.FUNCTION);
@@ -515,6 +517,8 @@ public class Ex2Sheet implements Sheet {
      */
     public ArrayList<Index2D> allCells(String line) {
         ArrayList<Index2D> ans = new ArrayList<Index2D>();
+        line = line.trim();
+
         if (Range2D.ValidFunction(line)) {
             line = Range2D.AllCellsInRange(line);// Convert function calls to all the cells int the range.
         }
@@ -1004,6 +1008,7 @@ public class Ex2Sheet implements Sheet {
      */
     public boolean validIfTrueAndFalse(String line) {
         if (line.isEmpty()) {
+            line = line.trim();
             return false;
         }
         if (line.charAt(0) != '=') {
@@ -1015,7 +1020,7 @@ public class Ex2Sheet implements Sheet {
         if (isNumber(line)) {
             return true;// If it's a number, return true
         }
-        if (Range2D.advnacedValidFunction(line, this)) {
+        if (Range2D.advancedValidFunction(line, this)) {
             return true;// If it's a valid function, return true
         }
         if (validIf(line)) {

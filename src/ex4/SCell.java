@@ -119,7 +119,7 @@ public class SCell implements Cell {
      */
     static boolean isFunction(String line){
         if (line == null || line.length() == 0) return false;
-        line = line.toLowerCase();
+        line = line.toLowerCase().trim();;
         if (!line.startsWith("=")) return false;
 
         for (String func : Ex2Utils.FUNCTIONS) {

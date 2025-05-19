@@ -248,6 +248,9 @@ public class Range2D {
      * @return True if the function format is valid, otherwise false.
      */
     public static boolean ValidFunction(String line) {
+        if (line == null || line.length() == 0) return false;
+        line = line.toLowerCase().trim();
+
         int space = line.indexOf(" ");
         if (space != -1) {
             return false;
@@ -284,7 +287,7 @@ public class Range2D {
      * @param t The Ex2Sheet object for validation.
      * @return True if valid, otherwise false.
      */
-    public static boolean advnacedValidFunction(String line,Ex2Sheet t){
+    public static boolean advancedValidFunction(String line, Ex2Sheet t){
         if (ValidFunction(line)){
             int indexStart = line.indexOf("(");
             int indexMiddle = line.indexOf(":");
