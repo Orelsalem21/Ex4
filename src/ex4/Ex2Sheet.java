@@ -753,11 +753,15 @@ public class Ex2Sheet implements Sheet {
      * @return The extracted condition as a string.
      */
     public static String ifCondition(String line) {
-        if (line.length() < 12) {
+        line = line.trim();
+        if (line.length() < 6 || !line.startsWith("=if(") || !line.contains(",")) {
             return "";
         }
         int indexEnd = line.indexOf(",");
-        String condition = line.substring(4, indexEnd);
+        if (indexEnd <= 4 || indexEnd >= line.length()) {
+            return "";
+        }
+        String condition = line.substring(4, indexEnd).replace(" ", "");
         return condition;
     }
 
@@ -811,6 +815,8 @@ public class Ex2Sheet implements Sheet {
      * @return The string representing the true case of the IF function.
      */
     public static String ifTrue(String line) {
+        line = line.replace(" ", "");
+
         int indexEndCondition = line.indexOf(",");
         int indexIfTrueStart = indexEndCondition + 1;
         int level = 0;
@@ -838,6 +844,8 @@ public class Ex2Sheet implements Sheet {
      * @return The string representing the false case of the IF function.
      */
     public static String ifFalse(String line) {
+        line = line.replace(" ", "");
+
         int indexEndCondition = line.indexOf(",");
         int indexIfTrueStart = indexEndCondition + 1;
         int level = 0;
@@ -864,27 +872,39 @@ public class Ex2Sheet implements Sheet {
      * @return The computed result of the IF function as an Object (Number or String).
      */
     public Object evaluateIf(String line) {
+        line = line.replace(" ", "");
         String conditionValue;
+
         if (evaluateCondition(line)) {
             conditionValue = ifTrue(line);
         } else {
             conditionValue = ifFalse(line);
         }
+
         if (isNumber(conditionValue)) {
-            return Double.parseDouble(conditionValue);// Convert number string to Double
+            return Double.parseDouble(conditionValue);
         }
-        if (SCell.isFunction(conditionValue)) {
-            Range2D range = new Range2D(Range2D.findStartAndEndValid(conditionValue));
+
+        String adjusted = conditionValue.trim();
+        if (!adjusted.startsWith("=")) {
+            adjusted = "=" + adjusted;
+        }
+
+        if (SCell.isFunction(adjusted)) {
+            Range2D range = new Range2D(Range2D.findStartAndEndValid(adjusted));
             range.updateValue(this);
-            return range.evaluateFunction(conditionValue);// Evaluate function in the range
+            return range.evaluateFunction(adjusted);
         }
-        if (SCell.BasicIsForm(conditionValue)) {
-            return computeFormP(conditionValue.substring(1));// Compute mathematical expression
+
+        if (SCell.BasicIsForm(adjusted)) {
+            return computeFormP(adjusted.substring(1));
         }
-        if (SCell.isIf(conditionValue)) {
-            return evaluateIf(conditionValue);// Recursively evaluate IF statement
+
+        if (SCell.isIf(adjusted)) {
+            return evaluateIf(adjusted);
         }
-        return conditionValue;// Return as a string if none of the above conditions apply
+
+        return conditionValue;
     }
 
     /**
@@ -895,6 +915,8 @@ public class Ex2Sheet implements Sheet {
      * @return True if the IF function is correctly formatted, otherwise false.
      */
     public boolean validIf(String _line) {
+        _line = _line.replace(" ", "");
+
         if (_line.isEmpty() || _line.isBlank()) {
             return false;
         }
