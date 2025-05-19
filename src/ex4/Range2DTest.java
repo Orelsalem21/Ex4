@@ -95,6 +95,21 @@ public class Range2DTest {
         assertFalse(Range2D.ValidFunction("=SUM(A1 B2)"));
         assertFalse(Range2D.ValidFunction("=SUM("));
     }
+    @Test
+    void testValidSumRectangleRange() {
+        Ex2Sheet sheet = new Ex2Sheet(9, 17);
+
+        sheet.set(0, 1, "3");  // A1
+        sheet.set(0, 2, "2");  // A2
+        sheet.set(1, 1, "6");  // B1
+        sheet.set(1, 2, "1");  // B2
+        sheet.set(2, 1, "7");  // C1
+        sheet.set(2, 2, "4");  // C2
+
+        sheet.set(0, 0, "=sum(A1:C2)"); // A0
+
+        assertEquals("23.0", sheet.value(0, 0));
+    }
 
     @Test
     void testFindStartAndEndValid() {

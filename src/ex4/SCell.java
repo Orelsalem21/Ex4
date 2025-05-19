@@ -60,6 +60,7 @@ public class SCell implements Cell {
         _line = s;
       }
     }
+
     /**
      * Gets the data in the cell.
      * @return The cell's value as a string.
@@ -116,28 +117,19 @@ public class SCell implements Cell {
      * @param line The string to check.
      * @return True if the string is a function, otherwise false.
      */
-    public static boolean isFunction(String line){
-        if (line == null || line.isEmpty()){
-            return false;
-        }
+    static boolean isFunction(String line){
+        if (line == null || line.length() == 0) return false;
         line = line.toLowerCase();
-        if(line.charAt(0) != '='){
-            return false;
-        }
-        for (int i = 0; i < Ex2Utils.FUNCTIONS.length; i++){
-            String current = Ex2Utils.FUNCTIONS[i];
-            if (line.length() > current.length()) {
-                String func = line.substring(1, current.length()+1);
-                if (func.equals("if")){
-                    return false;// 'if' is handled separately
-                }
-                if (func.equals(current)) {
-                    return true;
-                }
+        if (!line.startsWith("=")) return false;
+
+        for (String func : Ex2Utils.FUNCTIONS) {
+            if (line.startsWith("=" + func + "(")) {
+                return true;
             }
         }
         return false;
     }
+
     /**
      * Checks if the given string represents an IF function.
      * An IF function starts with "=if".

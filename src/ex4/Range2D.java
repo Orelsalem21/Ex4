@@ -145,22 +145,19 @@ public class Range2D {
      * @return The sum as a string.
      */
     public String sumValue() {
-        Double sum = 0.0;
-        for (int i = 0; i < this.value.length; i++) {
-            for (int j = 0; j < this.value[0].length; j++) {
-                if (value[i][j].equals("")) {
-                    continue;
+        double sum = 0;
+        try {
+            for (int i = 0; i < value.length; i++) {
+                for (int j = 0; j < value[0].length; j++) {
+                    if (!value[i][j].equals("")) {
+                        sum += Double.parseDouble(value[i][j]);
+                    }
                 }
-                try {
-                    Double.parseDouble(value[i][j]);
-                } catch (Exception e) {
-                    return Ex2Utils.FUNC_ERR;
-                }
-                double current = Double.parseDouble(value[i][j]);
-                sum += current;
             }
+            return sum + "";
+        } catch (Exception e) {
+            return Ex2Utils.FUNC_ERR;
         }
-        return sum.toString();
     }
 
 
