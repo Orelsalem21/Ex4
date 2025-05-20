@@ -34,7 +34,6 @@ public class Ex2Sheet implements Sheet {
      * Creates a spreadsheet with default width and height.
      * The dimensions are taken from Ex2Utils.
      */
-
     public Ex2Sheet() {
         this(Ex2Utils.WIDTH, Ex2Utils.HEIGHT);
     }
@@ -136,7 +135,7 @@ public class Ex2Sheet implements Sheet {
     public void set(int x, int y, String s) {
         Cell c = new SCell(s);
         table[x][y] = c;
-        eval();// Recalculate all values after setting
+        eval();
     }
 
     /**
@@ -324,7 +323,6 @@ public class Ex2Sheet implements Sheet {
      * @param y The row index of the cell.
      * @return The evaluated value of the cell as a string.
      */
-
     @Override
     public String eval(int x, int y) {
         Cell c = table[x][y];
@@ -630,28 +628,6 @@ public class Ex2Sheet implements Sheet {
         return ans;
     }
 
-    private static int findFirstOp(String form) {
-        int ans = -1;
-        int s1 = 0, max = -1;
-        for (int i = 0; i < form.length(); i++) {
-            char c = form.charAt(i);
-            if (c == ')') {
-                s1--;
-            }
-            if (c == '(') {
-                s1++;
-            }
-            int op = op(form, Ex2Utils.M_OPS, i);
-            if (op != -1) {
-                if (s1 > max) {
-                    max = s1;
-                    ans = i;
-                }
-            }
-        }
-        return ans;
-    }
-
     /**
      * Finds the position of the last operator in an expression.
      * Used to determine where to split for recursive computation.
@@ -911,6 +887,7 @@ public class Ex2Sheet implements Sheet {
 
         return false; // Default case
     }
+
     /**
      * Extracts the 'true' part of an IF function.
      *
@@ -1095,6 +1072,7 @@ public class Ex2Sheet implements Sheet {
         // אם כל השאר נכשל, החזר כטקסט
         return conditionValue;
     }
+
     /**
      * Checks an IF function is in a correct format.
      * Checks for the correct number of commas, parentheses balance, and valid conditions.
@@ -1306,6 +1284,7 @@ public class Ex2Sheet implements Sheet {
 
         return true;// If all checks pass, the condition is valid
     }
+
     /**
      * Validates if the true or false parts of an IF function are valid.
      * The value can be a text,number, formula, function, or another IF statement.
@@ -1346,7 +1325,6 @@ public class Ex2Sheet implements Sheet {
     public static int countOccurrences(String text, String sub) {
         int count = 0;
         int index = 0;
-        // Loop through the text to find all occurrences of the substring
         while ((index = text.indexOf(sub, index)) != -1) {
             count++;
             index += sub.length();// Move index forward to avoid overlapping matches

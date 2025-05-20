@@ -15,6 +15,7 @@ public class SCell implements Cell {
     public SCell() {
         this("");
     }
+
     /**
      * Constructor that sets the cell with data.
      * @param s The value to store in the cell.
@@ -69,6 +70,7 @@ public class SCell implements Cell {
     public String getData() {
         return _line;
     }
+
     /**
      * Gets the type of the data stored in the cell.
      * @return The type of data (TEXT, NUMBER, FUNCTION, IF, FORM).
