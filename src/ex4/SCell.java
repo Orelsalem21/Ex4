@@ -117,11 +117,11 @@ public class SCell implements Cell {
      * @param line The string to check.
      * @return True if the string is a function, otherwise false.
      */
-    static boolean isFunction(String line){
+    static boolean isFunction(String line) {
         if (line == null || line.length() == 0) return false;
-        line = line.toLowerCase().trim();;
+        line = line.toLowerCase().replace(" ", "");
         if (!line.startsWith("=")) return false;
-
+        if (line.startsWith("=if(")) return false;
         for (String func : Ex2Utils.FUNCTIONS) {
             if (line.startsWith("=" + func + "(")) {
                 return true;

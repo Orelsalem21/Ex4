@@ -328,7 +328,7 @@ public class Ex2Sheet implements Sheet {
     @Override
     public String eval(int x, int y) {
         Cell c = table[x][y];
-        String line = c.getData();// Get the data stored in the cell
+        String line = c.getData();
         c.setData(line);
         if (c == null || c.getType() == Ex2Utils.TEXT) {
             data[x][y] = null;
@@ -359,6 +359,8 @@ public class Ex2Sheet implements Sheet {
                 Object ifResult = evaluateIf(line);
                 if (ifResult instanceof Double) {
                     data[x][y] = (Double) ifResult;
+                } else if (ifResult instanceof String && isNumber((String) ifResult)) {
+                    data[x][y] = Double.parseDouble((String) ifResult);
                 }
             }
         } else if (type == Ex2Utils.FORM | type == Ex2Utils.ERR_CYCLE_FORM || type == Ex2Utils.ERR_FORM_FORMAT) {
@@ -556,47 +558,61 @@ public class Ex2Sheet implements Sheet {
      * @param form The formula string to evaluate.
      * @return The computed result as a Double, or null if the formula is invalid.
      */
-    private Double computeFormP(String form) {
+    Double computeFormP(String form) {
+        if (form == null || form.isEmpty()) return null;
         Double ans = null;
+
         while (canRemoveB(form)) {
             form = removeB(form);
         }
+
+        while (true) {
+            java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("(sum|average|max|min)\\([^()]*\\)")
+                    .matcher(form);
+
+            if (m.find()) {
+                String funcFull = m.group();
+                Range2D range = new Range2D(Range2D.findStartAndEndValid(funcFull));
+                range.updateValue(this);
+                Double funcResult = range.evaluateFunction(funcFull);
+                if (funcResult == null) return null;
+
+                form = form.substring(0, m.start()) + "(" + funcResult + ")" + form.substring(m.end());
+            } else {
+                break;
+            }
+        }
+
         CellEntry c = new CellEntry(form);
         if (c.isValid()) {
-            return getDouble(eval(c.getX(), c.getY()));// Evaluate referenced cell
+            return getDouble(eval(c.getX(), c.getY()));
         } else {
             if (isNumber(form)) {
-                ans = getDouble(form);// Convert number string to Double
+                ans = getDouble(form);
             } else {
-                int ind = findLastOp(form);// Find last operator position
-                int opInd = opCode(form.substring(ind, ind + 1));// Get operation type
-                if (ind == 0) {  // the case of -1, or -(1+1)
+                int ind = findLastOp(form);
+                if (ind == -1 || ind >= form.length()) return null;
+                int opInd = opCode(form.substring(ind, ind + 1));
+                if (opInd == -1) return null;
+                if (ind == 0) {
                     double d = 1;
-                    if (opInd == 1) {// If the operator is '-', negate the value
+                    if (opInd == 1) {
                         d = -1;
                     }
-                    ans = d * computeFormP(form.substring(1));// Recursively compute the remaining expression
+                    ans = d * computeFormP(form.substring(1));
                 } else {
                     String f1 = form.substring(0, ind);
                     String f2 = form.substring(ind + 1);
-
                     Double a1 = computeFormP(f1);
                     Double a2 = computeFormP(f2);
                     if (a1 == null || a2 == null) {
                         ans = null;
                     } else {
-                        if (opInd == 0) {
-                            ans = a1 + a2;
-                        }
-                        if (opInd == 1) {
-                            ans = a1 - a2;
-                        }
-                        if (opInd == 2) {
-                            ans = a1 * a2;
-                        }
-                        if (opInd == 3) {
-                            ans = a1 / a2;
-                        }
+                        if (opInd == 0) ans = a1 + a2;
+                        if (opInd == 1) ans = a1 - a2;
+                        if (opInd == 2) ans = a1 * a2;
+                        if (opInd == 3) ans = a1 / a2;
                     }
                 }
             }
@@ -774,40 +790,127 @@ public class Ex2Sheet implements Sheet {
      */
     public boolean evaluateCondition(String line) {
         String condition = ifCondition(line);
-        if (condition.contains("<=")) {
-            int split = condition.indexOf("<=");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 2);
-            return computeFormP(form1) <= computeFormP(form2);
-        } else if (condition.contains(">=")) {
-            int split = condition.indexOf(">=");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 2);
-            return computeFormP(form1) >= computeFormP(form2);
-        } else if (condition.contains("==")) {
-            int split = condition.indexOf("==");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 2);
-            return computeFormP(form1).equals(computeFormP(form2));
-        } else if (condition.contains("!=")) {
-            int split = condition.indexOf("!=");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 2);
-            return !computeFormP(form1).equals(computeFormP(form2));
-        } else if (condition.contains(">")) {
-            int split = condition.indexOf(">");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 1);
-            return computeFormP(form1) > computeFormP(form2);
-        } else if (condition.contains("<")) {
-            int split = condition.indexOf("<");
-            String form1 = condition.substring(0, split);
-            String form2 = condition.substring(split + 1);
-            return computeFormP(form1) < computeFormP(form2);
-        }
-        return false;
-    }
 
+        // Find which operator is used in the condition
+        String operator = null;
+        int operatorIndex = -1;
+
+        for (String op : Ex2Utils.B_OPS) {
+            if (condition.contains(op)) {
+                operator = op;
+                operatorIndex = condition.indexOf(op);
+                break;
+            }
+        }
+
+        if (operator == null || operatorIndex == -1) {
+            return false; // No valid operator found
+        }
+
+        // Split the condition into left and right parts
+        String leftSide = condition.substring(0, operatorIndex);
+        String rightSide = condition.substring(operatorIndex + operator.length());
+
+        // Process left side if it contains functions
+        if (leftSide.contains("sum(") || leftSide.contains("max(") ||
+                leftSide.contains("min(") || leftSide.contains("average(")) {
+
+            try {
+                // Convert functions to numerical values
+                String processed = leftSide;
+                while (processed.contains("sum(") || processed.contains("max(") ||
+                        processed.contains("min(") || processed.contains("average(")) {
+
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("(sum|average|max|min)\\([^()]*\\)")
+                            .matcher(processed);
+
+                    if (m.find()) {
+                        String funcFull = m.group();
+                        Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
+                        range.updateValue(this);
+                        Double funcResult = range.evaluateFunction("=" + funcFull);
+                        if (funcResult == null) return false;
+
+                        processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
+                    } else {
+                        break;
+                    }
+                }
+
+                leftSide = processed;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        // Process right side if it contains functions
+        if (rightSide.contains("sum(") || rightSide.contains("max(") ||
+                rightSide.contains("min(") || rightSide.contains("average(")) {
+
+            try {
+                // Convert functions to numerical values
+                String processed = rightSide;
+                while (processed.contains("sum(") || processed.contains("max(") ||
+                        processed.contains("min(") || processed.contains("average(")) {
+
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("(sum|average|max|min)\\([^()]*\\)")
+                            .matcher(processed);
+
+                    if (m.find()) {
+                        String funcFull = m.group();
+                        Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
+                        range.updateValue(this);
+                        Double funcResult = range.evaluateFunction("=" + funcFull);
+                        if (funcResult == null) return false;
+
+                        processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
+                    } else {
+                        break;
+                    }
+                }
+
+                rightSide = processed;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        // Calculate values for both sides after processing functions
+        Double leftValue = null;
+        try {
+            leftValue = computeFormP(leftSide);
+            if (leftValue == null) return false;
+        } catch (Exception e) {
+            return false;
+        }
+
+        Double rightValue = null;
+        try {
+            rightValue = computeFormP(rightSide);
+            if (rightValue == null) return false;
+        } catch (Exception e) {
+            return false;
+        }
+
+        // Compare values based on the operator
+        if (operator.equals("<")) {
+            return leftValue < rightValue;
+        } else if (operator.equals(">")) {
+            return leftValue > rightValue;
+        } else if (operator.equals("<=")) {
+            return leftValue <= rightValue;
+        } else if (operator.equals(">=")) {
+            return leftValue >= rightValue;
+        } else if (operator.equals("==")) {
+            return leftValue.equals(rightValue);
+        } else if (operator.equals("!=")) {
+            return !leftValue.equals(rightValue);
+        }
+
+        return false; // Default case
+    }
     /**
      * Extracts the 'true' part of an IF function.
      *
@@ -881,32 +984,117 @@ public class Ex2Sheet implements Sheet {
             conditionValue = ifFalse(line);
         }
 
+        // אם זה מספר פשוט, החזר אותו
         if (isNumber(conditionValue)) {
             return Double.parseDouble(conditionValue);
         }
 
+        // הכן את הערך להערכה
         String adjusted = conditionValue.trim();
         if (!adjusted.startsWith("=")) {
             adjusted = "=" + adjusted;
         }
 
+        // בדוק אם זה IF מקונן
+        if (SCell.isIf(adjusted)) {
+            return evaluateIf(adjusted);
+        }
+
+        // טיפול מיוחד לביטויים המשלבים פונקציות ואופרטורים
+        if (adjusted.startsWith("=") &&
+                (adjusted.contains("sum(") || adjusted.contains("max(") ||
+                        adjusted.contains("min(") || adjusted.contains("average("))) {
+
+            // הוצא את סימן ה-= מתחילת הביטוי
+            String expr = adjusted.substring(1);
+
+            // החלף פונקציות בערכים מחושבים
+            while (expr.contains("sum(") || expr.contains("max(") ||
+                    expr.contains("min(") || expr.contains("average(")) {
+
+                // מצא את הפונקציה הבאה
+                int startFunc = -1;
+                int endFunc = -1;
+
+                for (String func : new String[]{"sum", "max", "min", "average"}) {
+                    int idx = expr.indexOf(func + "(");
+                    if (idx != -1 && (startFunc == -1 || idx < startFunc)) {
+                        startFunc = idx;
+                    }
+                }
+
+                if (startFunc != -1) {
+                    // מצא את הסוגריים המאוזנים
+                    int level = 0;
+                    endFunc = startFunc;
+                    while (endFunc < expr.length()) {
+                        if (expr.charAt(endFunc) == '(') level++;
+                        if (expr.charAt(endFunc) == ')') {
+                            level--;
+                            if (level == 0) break;
+                        }
+                        endFunc++;
+                    }
+
+                    if (endFunc < expr.length()) {
+                        // הוצא את הפונקציה
+                        String funcExpr = expr.substring(startFunc, endFunc + 1);
+                        String funcWithEquals = "=" + funcExpr;
+
+                        // חשב את הפונקציה
+                        double funcResult = 0;
+                        if (SCell.isFunction(funcWithEquals)) {
+                            Range2D range = new Range2D(Range2D.findStartAndEndValid(funcWithEquals));
+                            range.updateValue(this);
+                            Double result = range.evaluateFunction(funcWithEquals);
+                            if (result != null) {
+                                funcResult = result;
+                            }
+                        }
+
+                        // החלף את הפונקציה בערך המחושב
+                        expr = expr.substring(0, startFunc) + funcResult + expr.substring(endFunc + 1);
+                    } else {
+                        break; // משהו לא בסדר, לא נמצא סוגר סוגר
+                    }
+                } else {
+                    break; // לא נמצאו עוד פונקציות
+                }
+            }
+
+            // כעת expr מכיל רק ביטוי מתמטי פשוט, אפשר לחשב אותו
+            try {
+                Double result = computeFormP(expr);
+                if (result != null) {
+                    return result;
+                }
+            } catch (Exception e) {
+                // אם הערכת הנוסחה נכשלת, נמשיך לבדיקות הבאות
+            }
+        }
+
+        // טיפול רגיל בנוסחאות
+        if (adjusted.startsWith("=")) {
+            try {
+                Double result = computeFormP(adjusted.substring(1));
+                if (result != null) {
+                    return result;
+                }
+            } catch (Exception e) {
+                // המשך לבדיקות אחרות אם הערכת הנוסחה נכשלת
+            }
+        }
+
+        // בדוק אם זו פונקציה בודדת
         if (SCell.isFunction(adjusted)) {
             Range2D range = new Range2D(Range2D.findStartAndEndValid(adjusted));
             range.updateValue(this);
             return range.evaluateFunction(adjusted);
         }
 
-        if (SCell.BasicIsForm(adjusted)) {
-            return computeFormP(adjusted.substring(1));
-        }
-
-        if (SCell.isIf(adjusted)) {
-            return evaluateIf(adjusted);
-        }
-
+        // אם כל השאר נכשל, החזר כטקסט
         return conditionValue;
     }
-
     /**
      * Checks an IF function is in a correct format.
      * Checks for the correct number of commas, parentheses balance, and valid conditions.
@@ -974,6 +1162,8 @@ public class Ex2Sheet implements Sheet {
         if (_line.isEmpty()) {
             return false;
         }
+
+        // Check if condition contains a valid operator
         int pass = 0;
         String oprator = null;
         for (int i = 0; i < Ex2Utils.B_OPS.length; i++) {
@@ -985,42 +1175,137 @@ public class Ex2Sheet implements Sheet {
                 oprator = Ex2Utils.B_OPS[i];
             }
         }
+
         if (pass != 1 || oprator == null) {
             return false;// Must contain exactly one operator
         }
+
         int indexOperator = _line.indexOf(oprator);
         if (indexOperator == -1) {
             return false; // Operator not found, invalid condition
         }
+
         String leftFormula = _line.substring(0, indexOperator);
         String rightFormula = _line.substring(indexOperator + oprator.length());
-        if (leftFormula.isEmpty()) {
-            return false;// Left side of the condition must not be empty
+
+        if (leftFormula.isEmpty() || rightFormula.isEmpty()) {
+            return false;  // Sides cannot be empty
         }
-        if (leftFormula.charAt(0) == '=') {
-            if (!isForm(leftFormula.substring(1))) {
-                return false; // Left formula must be a valid.
+
+        // Check for functions in left formula
+        if (leftFormula.contains("sum(") || leftFormula.contains("max(") ||
+                leftFormula.contains("min(") || leftFormula.contains("average(")) {
+
+            // Try to evaluate the function
+            try {
+                if (leftFormula.charAt(0) == '=') {
+                    leftFormula = leftFormula.substring(1);  // Remove = if exists
+                }
+
+                // Handle functions in formula by substituting with computed values
+                String processed = leftFormula;
+                while (processed.contains("sum(") || processed.contains("max(") ||
+                        processed.contains("min(") || processed.contains("average(")) {
+
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("(sum|average|max|min)\\([^()]*\\)")
+                            .matcher(processed);
+
+                    if (m.find()) {
+                        String funcFull = m.group();
+                        try {
+                            Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
+                            range.updateValue(this);
+                            Double funcResult = range.evaluateFunction("=" + funcFull);
+                            if (funcResult == null) return false;
+
+                            processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                // Now processed contains only numbers and operators
+                if (!isForm(processed)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;  // Error evaluating the function
             }
         } else {
-            if (!isForm(leftFormula)) {
-                return false;// Right side of the condition must not be empty
+            // Regular check for formulas
+            if (leftFormula.charAt(0) == '=') {
+                if (!isForm(leftFormula.substring(1))) {
+                    return false; // Left formula must be valid
+                }
+            } else {
+                if (!isForm(leftFormula)) {
+                    return false;
+                }
             }
         }
-        if (rightFormula.isEmpty()) {
-            return false;
-        }
-        if (rightFormula.charAt(0) == '=') {
-            if (!isForm(rightFormula.substring(1))) {
-                return false;
+
+        // Check for functions in right formula
+        if (rightFormula.contains("sum(") || rightFormula.contains("max(") ||
+                rightFormula.contains("min(") || rightFormula.contains("average(")) {
+
+            // Try to evaluate the function
+            try {
+                if (rightFormula.charAt(0) == '=') {
+                    rightFormula = rightFormula.substring(1);  // Remove = if exists
+                }
+
+                // Handle functions in formula by substituting with computed values
+                String processed = rightFormula;
+                while (processed.contains("sum(") || processed.contains("max(") ||
+                        processed.contains("min(") || processed.contains("average(")) {
+
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("(sum|average|max|min)\\([^()]*\\)")
+                            .matcher(processed);
+
+                    if (m.find()) {
+                        String funcFull = m.group();
+                        try {
+                            Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
+                            range.updateValue(this);
+                            Double funcResult = range.evaluateFunction("=" + funcFull);
+                            if (funcResult == null) return false;
+
+                            processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                // Now processed contains only numbers and operators
+                if (!isForm(processed)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;  // Error evaluating the function
             }
         } else {
-            if (!isForm(rightFormula)) {
-                return false;
+            // Regular check for formulas
+            if (rightFormula.charAt(0) == '=') {
+                if (!isForm(rightFormula.substring(1))) {
+                    return false;
+                }
+            } else {
+                if (!isForm(rightFormula)) {
+                    return false;
+                }
             }
         }
+
         return true;// If all checks pass, the condition is valid
     }
-
     /**
      * Validates if the true or false parts of an IF function are valid.
      * The value can be a text,number, formula, function, or another IF statement.
@@ -1229,6 +1514,7 @@ public class Ex2Sheet implements Sheet {
         }
         return true;
     }
+
 }
 
 

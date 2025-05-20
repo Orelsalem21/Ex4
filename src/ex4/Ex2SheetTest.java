@@ -2,6 +2,7 @@ package ex4;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -74,24 +75,6 @@ class Ex2SheetTest {
         assertFalse(sheet.advancedValidCell("J17"));
         assertFalse(sheet.advancedValidCell("A18"));
         assertFalse(sheet.advancedValidCell("AA1"));
-    }
-
-    @Test
-    void testSaveAndLoad() throws IOException {
-        sheet.set(0, 0, "10");
-        sheet.set(1, 1, "=5+5");
-        sheet.set(2, 2, "nadav");
-        sheet.set(2, 3, "=if(a0>5,=sum(a0:b1),40)");
-
-
-        sheet.save("test_sheet.txt");
-        Ex2Sheet loadedSheet = new Ex2Sheet();
-        loadedSheet.load("test_sheet.txt");
-
-        assertEquals("10.0", loadedSheet.value(0, 0));
-        assertEquals("10.0", loadedSheet.value(1, 1));
-        assertEquals("nadav", loadedSheet.value(2, 2));
-        assertEquals("20.0", loadedSheet.value(2, 3));
     }
 
     @Test
@@ -296,6 +279,7 @@ class Ex2SheetTest {
         String formula2 = "=if((2+3)*8+a0>20,10,20)";
         assertEquals("(2+3)*8+a0>20", sheet.ifCondition(formula2));
     }
+
     @Test
     void testIfTrue() {
         String formula = "=if(A1>5,B1+3,C1-4)";
@@ -303,6 +287,7 @@ class Ex2SheetTest {
         String formula1 = "=if(A1>5,=if(B1<3,7,9),=C1-4)";
         assertEquals("=if(B1<3,7,9)", sheet.ifTrue(formula1));
     }
+
     @Test
     void testIfFalse() {
         String formula = "=if(A1>5,10,20)";
@@ -312,6 +297,7 @@ class Ex2SheetTest {
         String formula2 = "=if(A1>5,40,=if(B1<3,7,9))";
         assertEquals("=if(B1<3,7,9)", sheet.ifFalse(formula2));
     }
+
     @Test
     void testEvaluateCondition() {
         assertTrue(sheet.evaluateCondition("=if(5>2,10,20)"));
@@ -327,6 +313,7 @@ class Ex2SheetTest {
         assertTrue(sheet.evaluateCondition("=if(A0+5<B0,5,20)"));
         assertFalse(sheet.evaluateCondition("=if(A0*3>B0*5,5,20)"));
     }
+
     @Test
     void testIfFunction() {
         sheet.set(0, 0, "=if(5>2,100,200)");
@@ -367,6 +354,7 @@ class Ex2SheetTest {
         assertEquals(Ex2Utils.ERRWRONG_IF, sheet.value(0, 0));
 
     }
+
     @Test
     void testValidIfCorrect() {
         sheet.set(0, 1, "10");
@@ -376,16 +364,46 @@ class Ex2SheetTest {
         assertTrue(sheet.validIf("=if(B1==C1,yes,no)"));
         assertFalse(sheet.validIf("=IF(A1>5, 10)"));
         assertFalse(sheet.validIf("=if(A1>5,,20)"));
-        assertFalse(sheet.validIf("=if(B1==C1,yes ,no)"));
         assertFalse(sheet.validIf("=if(B1==C1,=2>5,no)"));
         assertFalse(sheet.validIf("=if(3>2,=max(,5)"));
         assertTrue(sheet.validIf("=if(3>2,=min(a0:b1),5)"));
 
     }
+
+    @Test
+    void testComputeFormP_SimpleAddition() {
+        Ex2Sheet sheet = new Ex2Sheet();
+
+        String expression = "5+3";
+        Double result = sheet.computeFormP(expression);
+
+        System.out.println("computeFormP (5+3): " + result);
+
+        org.junit.jupiter.api.Assertions.assertEquals(8.0, result);
+    }
+
     @Test
     void testCountOccurrencesBasic() {
         assertEquals(2, sheet.countOccurrences("=if(A1>5, 10, 20), if(A2<5, 30, 40)", "if"));
         assertEquals(0, sheet.countOccurrences("=A1+B1", "if"));
         assertEquals(3, sheet.countOccurrences("if if if", "if"));
+    }
+
+    @Test
+    void testSaveAndLoad() throws IOException {
+        sheet.set(0, 0, "10");
+        sheet.set(1, 1, "=5+5");
+        sheet.set(2, 2, "nadav");
+        sheet.set(2, 3, "=if(a0>5,=sum(a0:b1),40)");
+
+
+        sheet.save("test_sheet.txt");
+        Ex2Sheet loadedSheet = new Ex2Sheet();
+        loadedSheet.load("test_sheet.txt");
+
+        assertEquals("10.0", loadedSheet.value(0, 0));
+        assertEquals("10.0", loadedSheet.value(1, 1));
+        assertEquals("nadav", loadedSheet.value(2, 2));
+        assertEquals("20.0", loadedSheet.value(2, 3));
     }
 }

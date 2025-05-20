@@ -52,6 +52,7 @@ public class Range2DTest {
 
         assertEquals("2.0", range.minValue());
     }
+
     @Test
     void testMultiplyValue() {
         Ex2Sheet sheet = new Ex2Sheet(3, 3);
@@ -95,6 +96,7 @@ public class Range2DTest {
         assertFalse(Range2D.ValidFunction("=SUM(A1 B2)"));
         assertFalse(Range2D.ValidFunction("=SUM("));
     }
+
     @Test
     void testValidSumRectangleRange() {
         Ex2Sheet sheet = new Ex2Sheet(9, 17);
