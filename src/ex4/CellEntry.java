@@ -1,27 +1,30 @@
 package ex4;
 
-import ex4.Index2D;
-
-/** This class represents a cell in the spreadsheet.
-* It stores the location of a cell as either a reference string ("A1") or as numerical coordinates (x,y).
+/**
+ * This class represents a cell in the spreadsheet.
+ * It stores the cell's location either as a reference string (e.g., "A1")
+ * or as numeric coordinates (x, y).
  */
-public class CellEntry  implements Index2D {
-    private String _data;
-    private int x, y;
+    public class CellEntry implements Index2D {
+        private String _data;
+        private int x;
+        private int y;
 
     /**
-     * Constructor that initializes a cell entry using (x, y) coordinates.
-     * If the coordinates are out of bounds, it stores an error message.
-     * @param x The column index.
-     * @param y The row index.
+     * Constructs a cell entry using (x, y) coordinates.
+     * If the coordinates are out of bounds, an error value is stored.
+     *
+     * @param x Column index.
+     * @param y Row index.
      */
     public CellEntry(int x, int y) {
-        if(x<0 | y<0 | x>= Ex2Utils.ABC.length) {_data = "ERROR!";}
-        else {_data = Ex2Utils.ABC[x]+y;}// Convert (x, y) to cell reference
+        if (x < 0 || y < 0 || x >= Ex2Utils.ABC.length) {
+            _data = "ERROR!";
+        } else {
+            _data = Ex2Utils.ABC[x] + y;
+        }
         init();
     }
-
-    public String toString() {return _data;}
 
     /**
      * Constructor that initializes a cell entry using a cell reference string.
@@ -37,19 +40,22 @@ public class CellEntry  implements Index2D {
      * If the conversion fails, the cell is invalid.
      */
     private void init() {
-        x = -1; y= -1;
+        x = -1;
+        y= -1;
        if(_data!=null && _data.length()>=2) {
            _data = _data.toUpperCase();
-            String s1 = _data.substring(0,1);
-            String s2 = _data.substring(1);
-            Integer yy = Ex2Sheet.getInteger(s2);
-            if(yy!=null) {y=yy;}
+            String s1 = _data.substring(0,1);  // get column letter
+            String s2 = _data.substring(1);  // get row number
+            Integer yy = Ex2Sheet.getInteger(s2); // parse row number
+            if(yy!=null){
+                y=yy;
+            }
             if(y>=0) {
                 x = s1.charAt(0) - 'A';// Convert letter to index
-                if(x<0 | x>25) {x=-1;}// Invalid column
+                if(x<0 || x>25) {x=-1;}// Invalid column
           }
        }
-       if(x==-1) {_data=null; y=-1;}// invalid
+       if(x==-1) {_data=null; y=-1;} // mark as invalid cell
     }
 
     /**
@@ -65,49 +71,32 @@ public class CellEntry  implements Index2D {
     }
 
     /**
-     * Converts a cell reference string into numerical coordinates.
-     * @param cell The cell reference string.
-     */
-    private void cell2coord(String cell) {
-        int x = -1, y=-1;
-        if(cell!=null && cell.length()>=2) {
-            cell = cell.toUpperCase();
-            String s1 = cell.substring(0,1);
-            String s2 = cell.substring(1);
-            y = Ex2Sheet.getInteger(s2);
-            x = s1.charAt(0) - 'A';
-        }
-    }
-
-    /**
-     * Checks if the cell is within the valid range of the given spreadsheet.
-     * @param t The spreadsheet instance.
-     * @return True if the cell exists in the spreadsheet, otherwise false.
-     */
-    public boolean isIn(Sheet t) {
-        return t!=null && t.isIn(x,y);
-    }
-
-    /**
      * Checks if the cell reference is valid.
      * @return True if the cell is valid, otherwise false.
      */
     @Override
     public boolean isValid() {
-        return _data!=null;// Valid if _data is not null
-    }
+        return _data!=null;}
 
     /**
      * Gets the column index of the cell.
      * @return The column index.
      */
     @Override
-    public int getX() {return x;}
+    public int getX()
+         {return x;}
 
     /**
      * Gets the row index of the cell.
      * @return The row index.
      */
     @Override
-    public int getY() {return y;}
+    public int getY()
+         {return y;}
+
+    @Override
+    public String toString() {
+        return _data;
+    }
+
 }

@@ -5,9 +5,9 @@ package ex4;
  * Handles different data types such as text,numbers, formulas, functions, and IF conditions.
  */
 public class SCell implements Cell {
-    private String _line;// Cell's data
-    private int order =0;// Defines the computation order for formula evaluation
-    int type = Ex2Utils.TEXT;// Type of data contained in the cell
+    private String _line;
+    private int order =0;
+    int type = Ex2Utils.TEXT;
 
     /**
      * Default constructor setting an empty cell.
@@ -142,13 +142,4 @@ public class SCell implements Cell {
         return line != null && line.length() >= 3 && line.toLowerCase().startsWith("=if");
     }
 
-    /**
-     * Checks if the given string represents a basic formula.
-     * A formula starts with '=' but is not a function or an IF statement.
-     * @param _line The string to check.
-     * @return True if the string is a basic formula, otherwise false.
-     */
-    public static boolean BasicIsForm(String _line){
-        return _line.charAt(0) == '=' && !isFunction(_line) && !isIf(_line);
     }
-}
