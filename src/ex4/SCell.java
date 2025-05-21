@@ -23,6 +23,7 @@ public class SCell implements Cell {
     public SCell(String s) {
         setData(s);
     }
+
     /**
      * Gets the computation order of the cell.
      * @return The order in which this cell should be evaluated.
@@ -30,12 +31,6 @@ public class SCell implements Cell {
     @Override
     public int getOrder() {
         return order;
-    }
-
-
-    @Override
-    public String toString() {
-        return getData();
     }
 
     /**
@@ -98,19 +93,28 @@ public class SCell implements Cell {
         this.order = t;
     }
 
+    @Override
+    public String toString() {
+        return getData();
+    }
+
     /**
      * Checks if the given string represents a number.
      * @param line The string to check.
      * @return True if the string is a valid number, otherwise false.
      */
     public static boolean isNumber(String line) {
-        boolean ans = false;
-        try {
-            double v = Double.parseDouble(line);
-            ans = true;
+        if (line == null || line.isEmpty()) {
+            return false;
         }
-        catch (Exception e) {;}
-        return ans;
+
+        try {
+            Double.parseDouble(line);
+            return true;
+        }
+        catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**
@@ -120,7 +124,7 @@ public class SCell implements Cell {
      * @return True if the string is a function, otherwise false.
      */
     static boolean isFunction(String line) {
-        if (line == null || line.length() == 0) return false;
+        if (line == null || line.isEmpty()) return false;
         line = line.toLowerCase().replace(" ", "");
         if (!line.startsWith("=")) return false;
         if (line.startsWith("=if(")) return false;
