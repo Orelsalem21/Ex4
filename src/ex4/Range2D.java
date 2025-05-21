@@ -1,15 +1,16 @@
 package ex4;
 
 import java.util.ArrayList;
+
 /**
  * This class represents a 2D range in a spreadsheet.
  * It stores a start and end index, and a table of values.
  * It provides functions to get the min, max, sum, and other calculations in the range.
  */
 public class Range2D {
-    private Index2D start;
-    private Index2D end;
-    private String[][] value;
+    private final Index2D start;
+    private final Index2D end;
+    private final String[][] value;
 
     /**
      * Creates a Range2D with given start and end points.
@@ -60,7 +61,7 @@ public class Range2D {
      * Gets all cells in the range.
      * @return list of Index2D objects for all the cells.
      */
-    public ArrayList<Index2D> getcells() {
+    public ArrayList<Index2D> cells() {
         ArrayList<Index2D> cells = new ArrayList<>();
         for (int row = start.getX(); row <= end.getX(); row++) {
             for (int col = start.getY(); col <= end.getY(); col++) {
@@ -105,19 +106,19 @@ public class Range2D {
      * @return The smallest value as a string.
      */
     public String minValue() {
-        Double min = Double.MAX_VALUE;
-        for (int i = 0; i < this.value.length; i++) {
+        double min = Double.MAX_VALUE;
+        for (String[] strings : this.value) {
             for (int j = 0; j < this.value[0].length; j++) {
-                if (value[i][j].equals("")){// Skips empty values
+                if (strings[j].isEmpty()) {// Skips empty values
                     continue;
                 }
-                double current = Double.parseDouble(value[i][j]);
+                double current = Double.parseDouble(strings[j]);
                 if (current < min) {
                     min = current;
                 }
             }
         }
-        return min.toString();
+        return Double.toString(min);
     }
 
     /**
@@ -125,19 +126,19 @@ public class Range2D {
      * @return The biggest value as a string.
      */
     public String maxValue() {
-        Double max = Double.MIN_VALUE;
-        for (int i = 0; i < this.value.length; i++) {
+        double max = Double.MIN_VALUE;
+        for (String[] strings : this.value) {
             for (int j = 0; j < this.value[0].length; j++) {
-                if (value[i][j].equals("")){
+                if (strings[j].isEmpty()) {
                     continue;
                 }
-                double current = Double.parseDouble(value[i][j]);
+                double current = Double.parseDouble(strings[j]);
                 if (current > max) {
                     max = current;
                 }
             }
         }
-        return max.toString();
+        return Double.toString(max);
     }
 
     /**
@@ -147,10 +148,10 @@ public class Range2D {
     public String sumValue() {
         double sum = 0;
         try {
-            for (int i = 0; i < value.length; i++) {
+            for (String[] strings : value) {
                 for (int j = 0; j < value[0].length; j++) {
-                    if (!value[i][j].equals("")) {
-                        sum += Double.parseDouble(value[i][j]);
+                    if (!strings[j].isEmpty()) {
+                        sum += Double.parseDouble(strings[j]);
                     }
                 }
             }
@@ -160,26 +161,25 @@ public class Range2D {
         }
     }
 
-
     /**
      * Multiplies all the numbers in the range.
      * @return The product as a string.
      */
     public String multiplyValue() {
-        Double multiply = 1.0;
-        for (int i = 0; i < this.value.length; i++) {
+        double multiply = 1.0;
+        for (String[] strings : this.value) {
             for (int j = 0; j < this.value[0].length; j++) {
-                if (value[i][j].equals("")){
+                if (strings[j].isEmpty()) {
                     continue;
                 }
-                double current = Double.parseDouble(value[i][j]);
+                double current = Double.parseDouble(strings[j]);
                 multiply *= current;
             }
         }
         if (multiply == -0.0){
             multiply = 0.0;
         }
-        return multiply.toString();
+        return Double.toString(multiply);
     }
 
     /**
@@ -188,10 +188,10 @@ public class Range2D {
      */
     public String averageValue() {
         String sum = this.sumValue();
-        Double sum1 = Double.parseDouble(sum);
+        double sum1 = Double.parseDouble(sum);
         ArrayList<String> cells = this.getCellNames();
-        Double average = sum1 / cells.size();
-        return average.toString();
+        double average = sum1 / cells.size();
+        return Double.toString(average);
     }
 
     /**
@@ -248,7 +248,7 @@ public class Range2D {
      * @return True if the function format is valid, otherwise false.
      */
     public static boolean ValidFunction(String line) {
-        if (line == null || line.length() == 0) return false;
+        if (line == null || line.isEmpty()) return false;
         line = line.toLowerCase().trim();
 
         int space = line.indexOf(" ");
@@ -274,10 +274,7 @@ public class Range2D {
         if (lastCell.getX() < firstCell.getX() || lastCell.getY() < firstCell.getY()) {
             return false;
         }
-        if (!Ex2Sheet.validCell(startRange) || !Ex2Sheet.validCell(endRange) ) {
-            return false;
-        }
-        return true;
+        return Ex2Sheet.validCell(startRange) && Ex2Sheet.validCell(endRange);
     }
 
     /**
@@ -299,9 +296,7 @@ public class Range2D {
             if(!t.advancedValidCell(startRange) || !t.advancedValidCell(endRange)){
                 return false;
             }
-            if (checkValidCellTypes(t,firstCell,lastCell)){
-                return true;
-            }
+            return checkValidCellTypes(t, firstCell, lastCell);
         }
         return false;
     }
@@ -322,19 +317,18 @@ public class Range2D {
      * @param line The function string.
      * @return True if it is a MAX function, otherwise false.
      */
-   public static boolean MaxFunction(String line) {
+    public static boolean MaxFunction(String line) {
         line = line.toLowerCase();
         int indexEnd = line.indexOf("(");
         return line.substring(1, indexEnd).equals("max");
     }
 
     /**
-     *
      * Checks if the given function is a SUM function.
      * @param line The function string.
      * @return True if it is a SUM function, otherwise false.
      */
-   public static boolean SumFunction(String line) {
+    public static boolean SumFunction(String line) {
         line = line.toLowerCase();
         int indexEnd = line.indexOf("(");
         return line.substring(1, indexEnd).equals("sum");
@@ -352,41 +346,25 @@ public class Range2D {
     }
 
     /**
-     * Checks if the given function is an AVERAGE function.
-     * @param line The function string.
-     * @return True if it is an AVERAGE function, otherwise false.
-     */
-   public static boolean AverageFunction(String line) {
-        line = line.toLowerCase();
-        int indexEnd = line.indexOf("(");
-        return line.substring(1, indexEnd).equals("average");
-    }
-
-    /**
      * Computes the result of the given function.
      * @param line The function string.
      * @return The computed function result as a Double.
      */
-    public Double evaluateFunction(String line){
+    public Double evaluateFunction(String line) {
         if (Range2D.MinFunction(line)) {
-            Double dd = Double.parseDouble(this.minValue());
-            return dd;
+            return Double.parseDouble(this.minValue());
         }
         else if (Range2D.MaxFunction(line)) {
-            Double dd = Double.parseDouble(this.maxValue());
-            return dd;
+            return Double.parseDouble(this.maxValue());
         }
-        else if(Range2D.SumFunction(line)){
-            Double dd = Double.parseDouble(this.sumValue());
-            return dd;
+        else if (Range2D.SumFunction(line)) {
+            return Double.parseDouble(this.sumValue());
         }
-        else if (Range2D.MultiplyFunction(line)){
-            Double dd = Double.parseDouble(this.multiplyValue());
-            return dd;
+        else if (Range2D.MultiplyFunction(line)) {
+            return Double.parseDouble(this.multiplyValue());
         }
         else {
-            Double dd = Double.parseDouble(this.averageValue());
-            return dd;
+            return Double.parseDouble(this.averageValue());
         }
     }
 

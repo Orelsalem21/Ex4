@@ -25,7 +25,7 @@ public class Range2DTest {
 
     @Test
     void testGetCells() {
-        ArrayList<Index2D> cells = range.getcells();
+        ArrayList<Index2D> cells = range.cells();
         assertEquals(9, cells.size());
     }
 

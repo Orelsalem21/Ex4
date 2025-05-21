@@ -5,11 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class CellEntryTest {
-    private CellEntry cell;
 
     @Test
     void testGetCellEntry() {
-        cell = new CellEntry("A1");
+        CellEntry cell = new CellEntry("A1");
         assertEquals(0, cell.getX());
         assertEquals(1, cell.getY());
         cell = new CellEntry("Z99");
