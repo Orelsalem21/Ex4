@@ -16,12 +16,11 @@ This project extends a basic spreadsheet system with support for mathematical ex
 
 ---
 
-## 🎬 Demo  
+## 🎬 Demo
 
-[![Watch Demo](demo-preview.png)](https://youtu.be/0j_o3yKhASw)
+[![Watch Demo](demo-screenshot.png)](https://youtu.be/0j_o3yKhASw)
 
-Click the image to watch a short demo of the project in action.
----
+Click the image above to watch a short demo showing how the system works in action.
 
 ## ⚙️ Features & Examples
 
