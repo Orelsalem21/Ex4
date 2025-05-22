@@ -20,7 +20,7 @@ This project extends a basic spreadsheet system with support for mathematical ex
 
 [![Watch Demo](demo-screenshot.png)](https://youtu.be/0j_o3yKhASw)
 
-Click the image above to watch a short demo showing how the system works in action.
+![Preview](Sol_Ex4_.png)
 
 ## ⚙️ Features & Examples
 
