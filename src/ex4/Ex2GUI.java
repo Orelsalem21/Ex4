@@ -2,17 +2,6 @@ package ex4;
 import java.awt.*;
 import java.io.IOException;
 
-/**
- * ArielU. Intro2CS, Ex2: https://docs.google.com/document/d/1-18T-dj00apE4k1qmpXGOaqttxLn-Kwi/edit?usp=sharing&ouid=113711744349547563645&rtpof=true&sd=true
- * This is a very partial solution as of Ex4 ("הערכה חילופית"), in particular this solution
- * does NOT include a documentation and JUnit tests.
- *
- * The Code uses the STDDraw class:
- * https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html
- * Note: a few minor changes were added to STDDraw suit the logic of Ex2:
- * @author boaz.benmoshe
- *
- */
 public class Ex2GUI {
 
 	private static Sheet table; // this is the main data (an implementation of the Sheet interface).

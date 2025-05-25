@@ -143,25 +143,22 @@ public class Ex2Sheet implements Sheet {
      */
     @Override
     public void eval() {
-        int[][] dd = depth(); // Computes the dependency depth for each cell
+        int[][] dd = depth();
         data = new Double[width()][height()];
         for (int x = 0; x < width(); x = x + 1) {
             for (int y = 0; y < height(); y = y + 1) {
                 Cell c = table[x][y];
-                // If the cell is not a text type and is computable, evaluate its value
                 if (dd[x][y] != -1 && c != null && (c.getType() != Ex2Utils.TEXT)) {
                     String res = eval(x, y);
                     Double d = getDouble(res);
-                    // If the result is invalid, mark it as a formula error
                     if (d == null) {
                         if (c.getType() != Ex2Utils.FUNC_ERR_FORMAT && c.getType() != Ex2Utils.IF_ERR_FORMAT && c.getType() != Ex2Utils.IF && c.getType() != Ex2Utils.ERR_WRONG_IF) {
                             c.setType(Ex2Utils.ERR_FORM_FORMAT);
                         }
                     } else {
-                        data[x][y] = d;// Stores the computed numeric value
+                        data[x][y] = d;
                     }
                 }
-                // If the cell is part of a circular dependency
                 if (dd[x][y] == -1) {
                     c.setType(Ex2Utils.ERR_CYCLE_FORM);
                 }
@@ -199,26 +196,25 @@ public class Ex2Sheet implements Sheet {
             for (int y = 0; y < height(); y = y + 1) {
                 Cell c = this.get(x, y);
                 int t = c.getType();
-                if (Ex2Utils.TEXT != t) {// text cells are not computable.
+                if (Ex2Utils.TEXT != t) {
                     ans[x][y] = -1;
                 }
             }
         }
-        int count = 0, all = width() * height();// Track computed cells
+        int count = 0, all = width() * height();
         boolean changed = true;
-        // process cells until no further changes occur or the maximum depth is reached in this spreadsheet.
         while (changed && count < all) {
             changed = false;
             for (int x = 0; x < width(); x = x + 1) {
                 for (int y = 0; y < height(); y = y + 1) {
-                    if (ans[x][y] == -1) {// Process only uncomputed cells
+                    if (ans[x][y] == -1) {
                         Cell c = this.get(x, y);
-                        ArrayList<Index2D> deps = allCells(c.getData());// Identify and collect the dependent cells required for computation."
-                        int dd = canBeComputed(deps, ans);// Determine if computation is possible
-                        if (dd != -1) {// If computation is possible, assign depth level
+                        ArrayList<Index2D> deps = allCells(c.getData());
+                        int dd = canBeComputed(deps, ans);
+                        if (dd != -1) {
                             ans[x][y] = dd;
-                            count++;// Increase computed cell count
-                            changed = true;// Mark that a change occurred
+                            count++;
+                            changed = true;
                         }
                     }
                 }
@@ -764,130 +760,106 @@ public class Ex2Sheet implements Sheet {
      * @param line The IF function string.
      * @return True if the condition evaluates to true, otherwise false.
      */
+    /**
+     * Evaluates IF condition with support for comparison operators and functions.
+     * Supports: <, >, <=, >=, ==, != with formulas and math functions.
+     */
     public boolean evaluateCondition(String line) {
         String condition = ifCondition(line);
+        String[] parts = parseConditionParts(condition);
 
-        // Find which operator is used in the condition
-        String operator = null;
-        int operatorIndex = -1;
+        if (parts == null) return false;
 
-        for (String op : Ex2Utils.B_OPS) {
-            if (condition.contains(op)) {
-                operator = op;
-                operatorIndex = condition.indexOf(op);
-                break;
-            }
-        }
+        Double leftValue = evaluateConditionSide(parts[0]);
+        Double rightValue = evaluateConditionSide(parts[2]);
 
-        if (operator == null || operatorIndex == -1) {
-            return false; // No valid operator found
-        }
+        if (leftValue == null || rightValue == null) return false;
 
-        // Split the condition into left and right parts
-        String leftSide = condition.substring(0, operatorIndex);
-        String rightSide = condition.substring(operatorIndex + operator.length());
-
-        // Process left side if it contains functions
-        if (leftSide.contains("sum(") || leftSide.contains("max(") ||
-                leftSide.contains("min(") || leftSide.contains("average(")) {
-
-            try {
-                // Convert functions to numerical values
-                String processed = leftSide;
-                while (processed.contains("sum(") || processed.contains("max(") ||
-                        processed.contains("min(") || processed.contains("average(")) {
-
-                    java.util.regex.Matcher m = java.util.regex.Pattern
-                            .compile("(sum|average|max|min)\\([^()]*\\)")
-                            .matcher(processed);
-
-                    if (m.find()) {
-                        String funcFull = m.group();
-                        Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
-                        range.updateValue(this);
-                        Double funcResult = range.evaluateFunction("=" + funcFull);
-                        if (funcResult == null) return false;
-
-                        processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
-                    } else {
-                        break;
-                    }
-                }
-
-                leftSide = processed;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        // Process right side if it contains functions
-        if (rightSide.contains("sum(") || rightSide.contains("max(") ||
-                rightSide.contains("min(") || rightSide.contains("average(")) {
-
-            try {
-                // Convert functions to numerical values
-                String processed = rightSide;
-                while (processed.contains("sum(") || processed.contains("max(") ||
-                        processed.contains("min(") || processed.contains("average(")) {
-
-                    java.util.regex.Matcher m = java.util.regex.Pattern
-                            .compile("(sum|average|max|min)\\([^()]*\\)")
-                            .matcher(processed);
-
-                    if (m.find()) {
-                        String funcFull = m.group();
-                        Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + funcFull));
-                        range.updateValue(this);
-                        Double funcResult = range.evaluateFunction("=" + funcFull);
-                        if (funcResult == null) return false;
-
-                        processed = processed.substring(0, m.start()) + funcResult + processed.substring(m.end());
-                    } else {
-                        break;
-                    }
-                }
-
-                rightSide = processed;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        // Calculate values for both sides after processing functions
-        Double leftValue = null;
-        try {
-            leftValue = computeFormP(leftSide);
-            if (leftValue == null) return false;
-        } catch (Exception e) {
-            return false;
-        }
-
-        Double rightValue = null;
-        try {
-            rightValue = computeFormP(rightSide);
-            if (rightValue == null) return false;
-        } catch (Exception e) {
-            return false;
-        }
-
-        // Compare values based on the operator
-        if (operator.equals("<")) {
-            return leftValue < rightValue;
-        } else if (operator.equals(">")) {
-            return leftValue > rightValue;
-        } else if (operator.equals("<=")) {
-            return leftValue <= rightValue;
-        } else if (operator.equals(">=")) {
-            return leftValue >= rightValue;
-        } else if (operator.equals("==")) {
-            return leftValue.equals(rightValue);
-        } else if (operator.equals("!=")) {
-            return !leftValue.equals(rightValue);
-        }
-
-        return false; // Default case
+        return compareValues(leftValue, rightValue, parts[1]);
     }
 
+    /**
+     * Splits condition into [leftSide, operator, rightSide].
+     * Returns null if no valid operator found.
+     */
+    private String[] parseConditionParts(String condition) {
+        for (String op : Ex2Utils.B_OPS) {
+            if (condition.contains(op)) {
+                int index = condition.indexOf(op);
+                return new String[] {
+                        condition.substring(0, index),
+                        op,
+                        condition.substring(index + op.length())
+                };
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Evaluates one side of condition (left or right).
+     * Handles formulas and math functions (sum, max, min, average).
+     */
+    private Double evaluateConditionSide(String side) {
+        try {
+            // Process math functions if present
+            if (containsMathFunction(side)) {
+                side = processFunctionsInSide(side);
+            }
+
+            return computeFormP(side);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Checks if side contains math functions.
+     */
+    private boolean containsMathFunction(String side) {
+        return side.contains("sum(") || side.contains("max(") ||
+                side.contains("min(") || side.contains("average(");
+    }
+
+    /**
+     * Replaces all math functions in side with their computed values.
+     */
+    private String processFunctionsInSide(String side) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern
+                .compile("(sum|average|max|min)\\([^()]*\\)");
+
+        while (containsMathFunction(side)) {
+            java.util.regex.Matcher matcher = pattern.matcher(side);
+
+            if (!matcher.find()) break;
+
+            String function = matcher.group();
+            Range2D range = new Range2D(Range2D.findStartAndEndValid("=" + function));
+            range.updateValue(this);
+            Double result = range.evaluateFunction("=" + function);
+
+            if (result == null) throw new RuntimeException("Function evaluation failed");
+
+            side = side.substring(0, matcher.start()) + result + side.substring(matcher.end());
+        }
+
+        return side;
+    }
+
+    /**
+     * Compares two values using the specified operator.
+     */
+    private boolean compareValues(Double left, Double right, String operator) {
+        switch (operator) {
+            case "<": return left < right;
+            case ">": return left > right;
+            case "<=": return left <= right;
+            case ">=": return left >= right;
+            case "==": return left.equals(right);
+            case "!=": return !left.equals(right);
+            default: return false;
+        }
+    }
     /**
      * Extracts the 'true' part of an IF function.
      *
@@ -961,35 +933,28 @@ public class Ex2Sheet implements Sheet {
             conditionValue = ifFalse(line);
         }
 
-        // אם זה מספר פשוט, החזר אותו
         if (isNumber(conditionValue)) {
             return Double.parseDouble(conditionValue);
         }
 
-        // הכן את הערך להערכה
         String adjusted = conditionValue.trim();
         if (!adjusted.startsWith("=")) {
             adjusted = "=" + adjusted;
         }
 
-        // בדוק אם זה IF מקונן
         if (SCell.isIf(adjusted)) {
             return evaluateIf(adjusted);
         }
 
-        // טיפול מיוחד לביטויים המשלבים פונקציות ואופרטורים
         if (adjusted.startsWith("=") &&
                 (adjusted.contains("sum(") || adjusted.contains("max(") ||
                         adjusted.contains("min(") || adjusted.contains("average("))) {
 
-            // הוצא את סימן ה-= מתחילת הביטוי
             String expr = adjusted.substring(1);
 
-            // החלף פונקציות בערכים מחושבים
             while (expr.contains("sum(") || expr.contains("max(") ||
                     expr.contains("min(") || expr.contains("average(")) {
 
-                // מצא את הפונקציה הבאה
                 int startFunc = -1;
                 int endFunc = -1;
 
@@ -1001,7 +966,6 @@ public class Ex2Sheet implements Sheet {
                 }
 
                 if (startFunc != -1) {
-                    // מצא את הסוגריים המאוזנים
                     int level = 0;
                     endFunc = startFunc;
                     while (endFunc < expr.length()) {
@@ -1014,11 +978,9 @@ public class Ex2Sheet implements Sheet {
                     }
 
                     if (endFunc < expr.length()) {
-                        // הוצא את הפונקציה
                         String funcExpr = expr.substring(startFunc, endFunc + 1);
                         String funcWithEquals = "=" + funcExpr;
 
-                        // חשב את הפונקציה
                         double funcResult = 0;
                         if (SCell.isFunction(funcWithEquals)) {
                             Range2D range = new Range2D(Range2D.findStartAndEndValid(funcWithEquals));
@@ -1029,28 +991,24 @@ public class Ex2Sheet implements Sheet {
                             }
                         }
 
-                        // החלף את הפונקציה בערך המחושב
                         expr = expr.substring(0, startFunc) + funcResult + expr.substring(endFunc + 1);
                     } else {
-                        break; // משהו לא בסדר, לא נמצא סוגר סוגר
+                        break;
                     }
                 } else {
-                    break; // לא נמצאו עוד פונקציות
+                    break;
                 }
             }
 
-            // כעת expr מכיל רק ביטוי מתמטי פשוט, אפשר לחשב אותו
             try {
                 Double result = computeFormP(expr);
                 if (result != null) {
                     return result;
                 }
             } catch (Exception e) {
-                // אם הערכת הנוסחה נכשלת, נמשיך לבדיקות הבאות
             }
         }
 
-        // טיפול רגיל בנוסחאות
         if (adjusted.startsWith("=")) {
             try {
                 Double result = computeFormP(adjusted.substring(1));
@@ -1058,18 +1016,15 @@ public class Ex2Sheet implements Sheet {
                     return result;
                 }
             } catch (Exception e) {
-                // המשך לבדיקות אחרות אם הערכת הנוסחה נכשלת
             }
         }
 
-        // בדוק אם זו פונקציה בודדת
         if (SCell.isFunction(adjusted)) {
             Range2D range = new Range2D(Range2D.findStartAndEndValid(adjusted));
             range.updateValue(this);
             return range.evaluateFunction(adjusted);
         }
 
-        // אם כל השאר נכשל, החזר כטקסט
         return conditionValue;
     }
 
@@ -1127,7 +1082,6 @@ public class Ex2Sheet implements Sheet {
     public Boolean advancedValidIf(String line) {
         return validIf(line) && CheckCellsInIf(line);
     }
-
 
     /**
      * Check if the condition part of an IF function is valid.
