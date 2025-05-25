@@ -22,6 +22,15 @@ This project extends a basic spreadsheet system with support for mathematical ex
 
 ![Preview](Sol_Ex4_.png)
 
+## How to Run
+
+Clone the repository:
+bashgit clone https://github.com/Orelsalem21/Ex4.git
+
+Open the project in IntelliJ IDEA
+Run the main class: Ex2GUI.java
+The spreadsheet GUI will open automatically
+
 ## ⚙️ Features & Examples
 
 ### Range Functions:
