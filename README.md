@@ -5,14 +5,14 @@
 ---
 
 ## 📝 Overview  
-This project extends a basic spreadsheet system with support for mathematical expressions, conditional logic, and data range functions. It is part of the *Introduction to Computer Science (2025A)* course.
+This project extends a basic spreadsheet system with support for mathematical expressions, conditional logic, and data range functions. It is part of the Introduction to Computer Science (2025A) course.
 
 ### 🔑 Key Features:
-- 📐 Evaluate formulas with `+`, `-`, `*`, `/`, and parentheses
-- 🧮 Functions like `sum`, `min`, `max`, `average`, and `multiply` over 2D cell ranges
-- ⚖️ Conditional expressions using nested `if` logic
-- 🔄 Cycle detection for formulas referencing each other
-- 💾 Save/load spreadsheet content from text files
+-  Evaluate formulas with `+`, `-`, `*`, `/`, and parentheses
+- Functions like `sum`, `min`, `max`, `average`, and `multiply` over 2D cell ranges
+- Conditional expressions using nested `if` logic
+- Cycle detection for formulas referencing each other
+- Save/load spreadsheet content from text files
 
 ---
 
