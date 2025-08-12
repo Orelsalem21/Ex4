@@ -7,6 +7,9 @@ I2CS ArielU: SpreadSheet (Ex2) assignment - this line should be ignored in the l
 0,8,min
 0,9,=MIN(A5:B5)
 0,10,(A5:B5)
+0,12,ERR_FORM
+0,13,=C5=C4
+0,14,C5=C4
 1,0,NUM
 1,1,5
 1,4,Form -*
@@ -15,6 +18,9 @@ I2CS ArielU: SpreadSheet (Ex2) assignment - this line should be ignored in the l
 1,8,max
 1,9,=Max(c5:H5)
 1,10,(C5:H5)
+1,12,ERR_CYCLE
+1,13,=I13
+1,14,B13=i13
 2,0,NUM=
 2,1,=5
 2,4,Form +/
@@ -23,6 +29,9 @@ I2CS ArielU: SpreadSheet (Ex2) assignment - this line should be ignored in the l
 2,8,sum
 2,9,=sum(D5:E5)
 2,10,(D5:E5)
+2,12,FUNC_ERR
+2,13,=sum()
+2,14,sum()
 3,0,Form +
 3,1,=6+4
 3,2,6+4
@@ -32,6 +41,9 @@ I2CS ArielU: SpreadSheet (Ex2) assignment - this line should be ignored in the l
 3,8,average
 3,9,=average(F5:G5)
 3,10,(F5:G5)
+3,12,IF_ERR!
+3,13,=if(1,2)
+3,14,if(1,2)
 4,0,Form -
 4,1,=6-4
 4,2,6-4
@@ -77,3 +89,6 @@ I2CS ArielU: SpreadSheet (Ex2) assignment - this line should be ignored in the l
 8,8,if ++++
 8,9,=if( sum(B1:C1) < 20, "low total", "high total" ) 
 8,10,totalTxt
+8,12,ERR_CYCLE
+8,13,=B13
+8,14,B13=i13
